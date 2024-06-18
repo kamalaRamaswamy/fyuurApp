@@ -220,17 +220,40 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  
+  term = request.form.get("search_term", "")
+  result = Artist.query.filter(Artist.name.ilike(f"%{term}%")).all()
+  data = []
+  for artist in result:
+    data.append({
+        "id": artist.id,
+        "name": artist.name,
+        "num_upcoming_shows": len(db.session.query(Show).filter(Show.start_time > datetime.now()).all())
+    })
+  print(data)
+
+  response = {
+      "count": len(result),
+      "data": data
+  }
 
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
+
+
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
+  data = Artist.query.get(artist_id)
+  if data is None:
+        abort(404)
+
+  print(data)
   
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
 #  ----------------------------------------------------------------
+
+# TODO
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
 
@@ -261,6 +284,25 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
+  try: 
+    name = request.form['name']
+    city = request.form['city']
+    state = request.form['state']
+    phone = request.form['phone']
+    genres = request.form.getlist('genres'),
+    facebook_link = request.form['facebook_link']
+    image_link = request.form['image_link']
+    website_link = request.form['website_link']
+    looking_for_venue = True if 'looking_for_venue' in request.form else False
+    seeking_description = request.form['seeking_description']
+
+    artist = Artist(name=name, city=city, state=state, phone=phone, genres=genres, facebook_link=facebook_link, image_link=image_link, website_link=website_link, looking_for_venue=looking_for_venue, seeking_description=seeking_description)
+    db.session.add(artist)
+    db.session.commit()
+    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+
+  except Exception as ex:
+    flash('An error occurred. Artist ' + request.form['name']+ ' could not be listed.')
   
   return render_template('pages/home.html')
 
