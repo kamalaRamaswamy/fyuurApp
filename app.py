@@ -195,18 +195,17 @@ def create_venue_submission():
 
   return render_template('pages/home.html')
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<int:venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-# TODO
-# 
-#   try:
-#     venue = Venue.query.get(venue_id)
-#     db.session.delete(venue)
-#     db.session.commit()
-#     flash('Venue ' + request.form['name'] +' was successfully deleted!')
+  try:
+    venue = Venue.query.get(venue_id)
+    print('inside delete', venue_id, venue)
+    db.session.delete(venue)
+    db.session.commit()
+    flash('Venue was successfully deleted!')
 
-#   except Exception as ex:
-#     flash('An error occurred. Venue ' + request.form['name'] + ' could not be deleted.')
+  except Exception as ex:
+    flash('An error occurred. Venue could not be deleted.')
   
   return render_template('pages/home.html')
 
